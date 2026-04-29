@@ -53,8 +53,13 @@ def run_detect(media_path: str | None, video_samples: int = 60) -> tuple[str, st
     if result.success and result.matched_entry is not None:
         e = result.matched_entry
         extra = ""
-        if result.media_type == "video" and result.frames_detected is not None:
-            extra = f"\n\n**検出フレーム**: {result.frames_detected} / {result.frames_total}"
+        if result.media_type == "video":
+            if result.frames_detected is not None:
+                extra += f"\n\n**不可視フレーム検出**: {result.frames_detected} / {result.frames_total}"
+            if result.visible_code:
+                extra += f"\n\n**可視コード抽出**: `{result.visible_code}`(信頼度 {result.visible_confidence:.2%})"
+            if result.consensus:
+                extra += f"\n\n**コンセンサス**: {result.consensus}"
         verdict = (
             f"# ✅ 一致({header_kind})\n\n"
             f"**ユーザーID**: `{e.id}`\n\n"

@@ -58,6 +58,9 @@ def build_attack_suite() -> list[Attack]:
         ("rotate_3deg", lambda s, d: attacks.rotate(s, d, angle_deg=3), "rotate"),
         # 合成
         ("sns_upload", lambda s, d: attacks.combined_sns_upload(s, d), "combined"),
+        # 可視透かし狙い撃ち
+        ("crop_all_corners", lambda s, d: attacks.crop_corners_only(s, d), "visible_attack"),
+        ("blur_corners", lambda s, d: attacks.heavy_blur_corners(s, d), "visible_attack"),
     ]
 
 

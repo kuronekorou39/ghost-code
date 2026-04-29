@@ -17,10 +17,13 @@ REGISTRY_PATH = ROOT / "tokens" / "registry.json"
 class TokenEntry:
     id: str                                       # 識別子 (例: "user-001" / "vuser-001")
     label: str                                    # 表示名
-    bits: str                                     # 埋め込みビット列
+    bits: str                                     # 埋め込みビット列(不可視透かし、HMAC 派生)
     stego_path: str                               # 生成した stego メディアの相対パス
     source_path: str                              # 元メディアの相対パス
     media_type: Literal["image", "video"] = "image"
+    visible_code: str = ""                        # 可視透かし 4 文字コード(動画のみ)
+    inv_nonce: int = 0                            # 不可視ビット衝突回避 nonce
+    vis_nonce: int = 0                            # 可視コード衝突回避 nonce
 
 
 def load_registry() -> list[TokenEntry]:
@@ -34,6 +37,9 @@ def load_registry() -> list[TokenEntry]:
         if "source_path" not in e and "source_image" in e:
             e["source_path"] = e.pop("source_image")
         e.setdefault("media_type", "image")
+        e.setdefault("visible_code", "")
+        e.setdefault("inv_nonce", 0)
+        e.setdefault("vis_nonce", 0)
         out.append(TokenEntry(**e))
     return out
 

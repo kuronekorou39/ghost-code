@@ -40,5 +40,13 @@ models/weights/
 # tokens/ 以下は全て gitignore(台帳もローカル秘匿)
 tokens/
 
+# 透かし派生の秘密鍵(絶対に git に入れない)
+.secrets/
+
+# 環境変数(認証情報を含むため絶対に git に入れない)
+.env
+.env.*
+!.env.example
+
 # Notebook checkpoints
 .ipynb_checkpoints/

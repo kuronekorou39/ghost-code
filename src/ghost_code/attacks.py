@@ -127,3 +127,38 @@ def combined_sns_upload(src: Path, dst: Path) -> None:
         "-pix_fmt", "yuv420p", "-c:a", "copy",
         str(dst),
     ])
+
+
+def crop_corners_only(src: Path, dst: Path, corner_ratio: float = 0.18) -> None:
+    """四隅をすべて黒塗り(可視透かしを消す攻撃の想定)。"""
+    # corner_ratio: 黒塗りする領域の幅/高さ割合。0.18 = 縦横の 18%
+    vf = (
+        f"drawbox=x=0:y=0:w=iw*{corner_ratio}:h=ih*{corner_ratio * 1.5}:color=black@1:t=fill,"
+        f"drawbox=x=iw*(1-{corner_ratio}):y=0:w=iw*{corner_ratio}:h=ih*{corner_ratio * 1.5}:color=black@1:t=fill,"
+        f"drawbox=x=0:y=ih*(1-{corner_ratio * 1.5}):w=iw*{corner_ratio}:h=ih*{corner_ratio * 1.5}:color=black@1:t=fill,"
+        f"drawbox=x=iw*(1-{corner_ratio}):y=ih*(1-{corner_ratio * 1.5}):w=iw*{corner_ratio}:h=ih*{corner_ratio * 1.5}:color=black@1:t=fill"
+    )
+    _run([
+        "ffmpeg", "-y", "-v", "error", "-i", str(src),
+        "-vf", vf,
+        "-c:v", "libx264", "-preset", "medium", "-crf", "18",
+        "-pix_fmt", "yuv420p", "-c:a", "copy",
+        str(dst),
+    ])
+
+
+def heavy_blur_corners(src: Path, dst: Path) -> None:
+    """四隅を強くぼかす(可視透かしを読めなくする攻撃)。"""
+    vf = (
+        "split=2[a][b];"
+        "[a]boxblur=20:1[blurred];"
+        "[blurred]crop=iw*0.18:ih*0.27:0:0[tl];"
+        "[b][tl]overlay=0:0"
+    )
+    _run([
+        "ffmpeg", "-y", "-v", "error", "-i", str(src),
+        "-vf", vf,
+        "-c:v", "libx264", "-preset", "medium", "-crf", "18",
+        "-pix_fmt", "yuv420p", "-c:a", "copy",
+        str(dst),
+    ])
